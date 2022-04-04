@@ -122,7 +122,7 @@ func TestAddonMetrics_AddonHealth(t *testing.T) {
 		t.Run("addon operator health test", func(t *testing.T) {
 			// local copy of the addon and it's expected health status
 			addon, expected := test.addon, test.expected
-			recorder.RecordAddonHealthInfo(test.addon, "test")
+			recorder.RecordAddonHealthInfo(addon, "test")
 			assert.Equal(t, float64(expected), testutil.ToFloat64(
 				recorder.addonHealthInfo.WithLabelValues(string(addon.Status.ObservedGeneration))))
 		})
