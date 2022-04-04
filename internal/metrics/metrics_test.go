@@ -81,6 +81,13 @@ func TestAddonMetrics_AddonHealth(t *testing.T) {
 	addon := newTestAddon("o672wxBaW9iR", []metav1.Condition{})
 
 	// several t.Run() functions to test the addon health
+	t.Run("checking addon health", func(t *testing.T) {
+		recorder.RecordAddonMetrics(addon)
+
+		// Expected:
+		// addon_operator_health_status 0
+		assert.Equal(t, float64(0), testutil.ToFloat64(recorder.addonHealthInfo.WithLabelValues(float64(healthStatus))))
+	})
 }
 
 func TestAddonMetrics_AddonConditions(t *testing.T) {
