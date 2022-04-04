@@ -78,16 +78,55 @@ func TestAddonMetrics_InstallCount(t *testing.T) {
 
 func TestAddonMetrics_AddonHealth(t *testing.T) {
 	recorder := NewRecorder(false)
-	addon := newTestAddon("o672wxBaW9iR", []metav1.Condition{})
 
-	// several t.Run() functions to test the addon health
-	t.Run("checking addon health", func(t *testing.T) {
-		recorder.RecordAddonMetrics(addon)
+	// sythetic test cases for addon health
+	testCases := []struct {
+		addon    *addonsv1alpha1.Addon
+		expected float64
+	}{
+		{
+			addon: newTestAddon("o672wxBaW9iR", []metav1.Condition{
+				{
+					Type:   addonsv1alpha1.Available,
+					Status: metav1.ConditionFalse,
+				},
+			}),
+			expected: float64(0),
+		},
+		{
+			addon: newTestAddon("o672wxBaW9iR", []metav1.Condition{
+				{
+					Type:   addonsv1alpha1.Available,
+					Status: metav1.ConditionTrue,
+				},
+			}),
+			expected: float64(1),
+		},
+		{
+			addon: newTestAddon("o672wxBaW9iR", []metav1.Condition{
+				{
+					Type:   addonsv1alpha1.Available,
+					Status: metav1.ConditionUnknown,
+				},
+			}),
+			expected: float64(2),
+		},
+		{
+			addon:    newTestAddon("o672wxBaW9iR", []metav1.Condition{}),
+			expected: float64(2),
+		},
+	}
 
-		// Expected:
-		// addon_operator_health_status 0
-		assert.Equal(t, float64(0), testutil.ToFloat64(recorder.addonHealthInfo.WithLabelValues(float64(healthStatus))))
-	})
+	// iterating over all the test cases
+	for _, test := range testCases {
+		t.Run("addon operator health test", func(t *testing.T) {
+			// local copy of the addon and it's expected health status
+			addon, expected := test.addon, test.expected
+			recorder.RecordAddonHealthInfo(test.addon, "test")
+			assert.Equal(t, float64(expected), testutil.ToFloat64(
+				recorder.addonHealthInfo.WithLabelValues(string(addon.Status.ObservedGeneration))))
+		})
+	}
 }
 
 func TestAddonMetrics_AddonConditions(t *testing.T) {
