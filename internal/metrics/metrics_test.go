@@ -76,6 +76,13 @@ func TestAddonMetrics_InstallCount(t *testing.T) {
 	})
 }
 
+func TestAddonMetrics_AddonHealth(t *testing.T) {
+	recorder := NewRecorder(false)
+	addon := newTestAddon("o672wxBaW9iR", []metav1.Condition{})
+
+	// several t.Run() functions to test the addon health
+}
+
 func TestAddonMetrics_AddonConditions(t *testing.T) {
 	recorder := NewRecorder(false)
 	addon := newTestAddon("o672wxBaW9iR", []metav1.Condition{})
